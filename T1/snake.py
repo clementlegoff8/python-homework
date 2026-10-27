@@ -37,13 +37,13 @@ def next_head(snake, direction):
 
 def turn(direction, key):
     """La nouvelle direction après l'appui sur la touche `key` (ex. pg.K_UP)."""
-    if key == pg.K_UP and direction != UP:
+    if key == pg.K_UP and direction != DOWN:
         return UP
-    elif key == pg.K_DOWN and direction != DOWN:
+    elif key == pg.K_DOWN and direction != UP:
         return DOWN
-    elif key == pg.K_LEFT and direction != LEFT:
+    elif key == pg.K_LEFT and direction != RIGHT:
         return LEFT
-    elif key == pg.K_RIGHT and direction != RIGHT:
+    elif key == pg.K_RIGHT and direction != LEFT:
         return RIGHT
     else:
         return direction
