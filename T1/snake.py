@@ -57,6 +57,10 @@ def move(snake, direction, fruit):
     snake.append(next_head(snake,direction))
     if snake[-1] == fruit:
         return "ate"
+    elif not in_scope(snake[-1]):
+        return "out-of-board"
+    elif snake[-1] in snake[:-1]:
+        return "self-bite"
     else:
         snake.pop(0)
         return "moved"
@@ -83,8 +87,6 @@ def main():
     running = True
 
     while running:
-        #print("tour")
-        # au plus 1 image par seconde
         clock.tick(6)
 
         # 1. les événements : il faut les lire, sinon la fenêtre ne répond pas
@@ -95,8 +97,11 @@ def main():
                 direction = turn(direction,event.key)
 
         # 2. l'état (rien pour l'instant)
-        if move(snake,direction,fruit) == "ate":
+        action = move(snake,direction,fruit)
+        if action == "ate":
             fruit = random_fruit(snake)
+        elif action == "out-of-board" or action == "self-bite":
+            running = False
 
         # 3. l'affichage : on prépare l'image en mémoire...
         screen.fill((255,255,255))
@@ -113,10 +118,12 @@ def main():
         rectfruit = pg.Rect(20*fruit[0],20*fruit[1],20,20)
         pg.draw.rect(screen, (255,0,0), rectfruit)
 
-        #screen.fill((randint(0, 255), randint(0, 255), randint(0, 255)))
         # ... puis on l'envoie à l'écran, une seule fois par tour de boucle
         pg.display.update()
-        
+        pg.display.set_caption(f"Score = {len(snake)}")
+
+    print(action)
+    print(f"Score final = {len(snake)}")
     pg.quit()
 
 # Ce bloc ne s'exécute que si l'on lance ce fichier (uv run snake.py),
