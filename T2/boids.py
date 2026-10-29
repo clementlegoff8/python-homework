@@ -52,8 +52,8 @@ class Boid(arcade.Sprite):
     def update(self, delta_time=1 / 60, *args, **kwargs):
         """Appelée par arcade (via la SpriteList) à chaque mise à jour."""
         rad = math.radians(self.angle)
-        self.center_x += self.speed * delta_time * math.cos(rad)
-        self.center_y -= self.speed * delta_time * math.sin(rad)
+        self.center_x += self.speed * delta_time * math.cos(rad) + self.separation(self.others)[0]
+        self.center_y -= self.speed * delta_time * math.sin(rad) + self.separation(self.others)[1]
         self.center_x = self.center_x % WIDTH
         self.center_y = self.center_y % HEIGHT
         self.angle += self.turning * TURN_SPEED * delta_time
@@ -73,7 +73,12 @@ class Boid(arcade.Sprite):
 
     def separation(self, others, radius=RADIUS):
         """Le déplacement (dx, dy) qui écarte le boid de ses voisins."""
-        raise NotImplementedError("étape 8")
+        dx,dy = 0,0
+        for other in self.neighbours(others):
+            d = math.dist(self.position, other.position)
+            dx += (self.center_x - other.center_x)*(1-d/radius)/2
+            dy += (self.center_y - other.center_y)*(1-d/radius)/2
+        return (dx,dy)
 
 
 class Obstacle(arcade.Sprite):
@@ -100,7 +105,6 @@ def obstacle_grid(n):
     for i in range(n):
         for j in range(n):
             obstacles.append(Obstacle(pas_horizontal * (i + 1/2), pas_vertical * (j + 1/2)))
-    print(obstacles[0].width)
     return obstacles
 
 
