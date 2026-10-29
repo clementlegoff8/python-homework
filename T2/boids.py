@@ -43,9 +43,10 @@ RADIUS = 30  # rayon de détection des voisins, en pixels (étapes 7 et 8)
 class Boid(arcade.Sprite):
     """Un oiseau : une flèche qui avance dans la direction où elle pointe."""
 
-    def __init__(self, x, y, angle, speed=SPEED, others=None):
+    def __init__(self, x, y, angle, speed=SPEED, turning=0, others=None):
         super().__init__(ARROW,center_x=x,center_y=y,angle=angle)
         self.speed = speed
+        self.turning = turning
 
     def update(self, delta_time=1 / 60, *args, **kwargs):
         """Appelée par arcade (via la SpriteList) à chaque mise à jour."""
@@ -54,6 +55,8 @@ class Boid(arcade.Sprite):
         self.center_y -= self.speed * delta_time * math.sin(rad)
         self.center_x = self.center_x % WIDTH
         self.center_y = self.center_y % HEIGHT
+        self.angle += self.turning * TURN_SPEED * delta_time
+        self.angle += random.uniform(-NOISE,NOISE)
 
     def neighbours(self, others, radius=RADIUS):
         """Les objets de `others` à moins de `radius` pixels, sauf soi-même."""
@@ -107,6 +110,20 @@ class MyWindow(arcade.Window):
         self.clear()
         self.boids.draw()
 
+    def on_key_press(self, symbol, modifiers):
+        if symbol == arcade.key.LEFT:
+            for boid in self.boids:
+                boid.turning = -1
+        elif symbol == arcade.key.RIGHT:
+            for boid in self.boids:
+                boid.turning = 1
+        elif symbol == arcade.key.Q:
+            self.close()
+
+    def on_key_release(self, symbol, modifiers):
+        if symbol == arcade.key.LEFT or symbol == arcade.key.RIGHT:
+            for boid in self.boids:
+                boid.turning = 0
 
 def main():
     MyWindow()
