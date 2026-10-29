@@ -44,7 +44,7 @@ class Boid(arcade.Sprite):
     """Un oiseau : une flèche qui avance dans la direction où elle pointe."""
 
     def __init__(self, x, y, angle, speed=SPEED, turning=0, others=None):
-        super().__init__(ARROW,center_x=x,center_y=y,angle=angle)
+        super().__init__(ARROW, center_x=x, center_y=y, angle=angle)
         self.speed = speed
         self.turning = turning
 
@@ -69,9 +69,8 @@ class Boid(arcade.Sprite):
 
 class Obstacle(arcade.Sprite):
     """Un obstacle immobile."""
-
     def __init__(self, x, y):
-        raise NotImplementedError("étape 6")
+        super().__init__(OBSTACLE, center_x=x, center_y=y)
 
 
 def random_boids(n, others=None):
@@ -86,7 +85,14 @@ def random_boids(n, others=None):
 
 def obstacle_grid(n):
     """n × n obstacles régulièrement espacés, au centre de leur carré."""
-    raise NotImplementedError("étape 6")
+    obstacles = arcade.SpriteList()
+    pas_horizontal = WIDTH / n
+    pas_vertical = HEIGHT / n
+    for i in range(n):
+        for j in range(n):
+            obstacles.append(Obstacle(pas_horizontal * (i + 1/2), pas_vertical * (j + 1/2)))
+    print(obstacles[0].width)
+    return obstacles
 
 
 # --- la fenêtre ---------------------------------------------------------------
@@ -108,6 +114,7 @@ class MyWindow(arcade.Window):
 
     def on_draw(self):
         self.clear()
+        obstacle_grid(GRID).draw()
         self.boids.draw()
 
     def on_key_press(self, symbol, modifiers):
