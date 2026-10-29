@@ -52,8 +52,8 @@ class Boid(arcade.Sprite):
         rad = math.radians(self.angle)
         self.center_x += self.speed * delta_time * math.cos(rad)
         self.center_y -= self.speed * delta_time * math.sin(rad)
-        self.center_x = self.center_x % 800
-        self.center_y = self.center_y % 800
+        self.center_x = self.center_x % WIDTH
+        self.center_y = self.center_y % HEIGHT
 
     def neighbours(self, others, radius=RADIUS):
         """Les objets de `others` à moins de `radius` pixels, sauf soi-même."""
@@ -73,7 +73,12 @@ class Obstacle(arcade.Sprite):
 
 def random_boids(n, others=None):
     """n boids placés et orientés au hasard, qui évitent tous `others`."""
-    raise NotImplementedError("étape 4")
+    boids = arcade.SpriteList()
+    for i in range(n):
+        x,y,a = random.uniform(0,800), random.uniform(0,800), random.uniform(0,360)
+        boid = Boid(x,y,a,others=others)
+        boids.append(boid)
+    return boids
 
 
 def obstacle_grid(n):
@@ -91,12 +96,9 @@ class MyWindow(arcade.Window):
         super().__init__(WIDTH, HEIGHT, "Boids")
         self.background_color = BACKGROUND  # la couleur que self.clear() étale
 
-        # pour l'instant, un simple Sprite : une image posée en (100, 100),
-        # comptés depuis le coin en bas à gauche
-        boid = Boid(100,100,-30)
         # une SpriteList : une liste de sprites, qu'arcade dessine d'un coup
         self.boids = arcade.SpriteList()
-        self.boids.append(boid)
+        self.boids.extend(random_boids(N_BOIDS))
 
     def on_update(self, delta_time):
         self.boids.update(delta_time)
