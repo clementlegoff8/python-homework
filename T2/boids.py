@@ -47,6 +47,7 @@ class Boid(arcade.Sprite):
         super().__init__(ARROW, center_x=x, center_y=y, angle=angle)
         self.speed = speed
         self.turning = turning
+        self.others = others
 
     def update(self, delta_time=1 / 60, *args, **kwargs):
         """Appelée par arcade (via la SpriteList) à chaque mise à jour."""
@@ -57,10 +58,18 @@ class Boid(arcade.Sprite):
         self.center_y = self.center_y % HEIGHT
         self.angle += self.turning * TURN_SPEED * delta_time
         self.angle += random.uniform(-NOISE,NOISE)
+        if len(self.neighbours(self.others)) > 0:
+            self.alpha = 128
+        else:
+            self.alpha = 255
 
     def neighbours(self, others, radius=RADIUS):
         """Les objets de `others` à moins de `radius` pixels, sauf soi-même."""
-        raise NotImplementedError("étape 7")
+        neighbours = arcade.SpriteList()
+        for other in others:
+            if math.dist(self.position, other.position) < radius and other != self:
+                neighbours.append(other)
+        return neighbours
 
     def separation(self, others, radius=RADIUS):
         """Le déplacement (dx, dy) qui écarte le boid de ses voisins."""
@@ -107,7 +116,10 @@ class MyWindow(arcade.Window):
 
         # une SpriteList : une liste de sprites, qu'arcade dessine d'un coup
         self.boids = arcade.SpriteList()
-        self.boids.extend(random_boids(N_BOIDS))
+        others = arcade.SpriteList()
+        self.boids.extend(random_boids(N_BOIDS,others))
+        others.extend(self.boids)
+        others.extend(obstacle_grid(GRID))
 
     def on_update(self, delta_time):
         self.boids.update(delta_time)
