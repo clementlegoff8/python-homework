@@ -7,8 +7,8 @@ Lancez-le avec :  uv run boids.py
 Testez-le avec :  uv run pytest
 """
 
-import math  # noqa: F401 (servira à l'étape 2)
-import random  # noqa: F401 (servira à l'étape 4)
+import math  # (servira à l'étape 2)
+import random  # (servira à l'étape 4)
 from pathlib import Path
 
 import arcade
@@ -21,6 +21,7 @@ HERE = Path(__file__).parent
 ARROW = HERE / "media" / "arrow.png"
 OBSTACLE = HERE / "media" / "obstacle.png"
 SKY = HERE / "media" / "sky.png"  # le décor (étape 9)
+SKY2 = HERE / "media" / "sky2.png"
 
 SPEED = 100  # pixels par seconde (étape 2)
 TURN_SPEED = 180  # degrés par seconde, tant qu'une flèche est enfoncée (étape 5)
@@ -52,20 +53,23 @@ class Boid(arcade.Sprite):
     def update(self, delta_time=1 / 60, *args, **kwargs):
         """Appelée par arcade (via la SpriteList) à chaque mise à jour."""
         rad = math.radians(self.angle)
-        self.center_x += self.speed * delta_time * math.cos(rad) + self.separation(self.others)[0]
-        self.center_y -= self.speed * delta_time * math.sin(rad) + self.separation(self.others)[1]
+        self.center_x += self.speed * delta_time * math.cos(rad)
+        self.center_y -= self.speed * delta_time * math.sin(rad)
         self.center_x = self.center_x % WIDTH
         self.center_y = self.center_y % HEIGHT
         self.angle += self.turning * TURN_SPEED * delta_time
         self.angle += random.uniform(-NOISE,NOISE)
-        if len(self.neighbours(self.others)) > 0:
-            self.alpha = 128
-        else:
-            self.alpha = 255
+        if self.others != None:
+            self.center_x += self.separation(self.others)[0]
+            self.center_y += self.separation(self.others)[1]
+            if len(self.neighbours(self.others)) > 0:
+                self.alpha = 128
+            else:
+                self.alpha = 255
 
     def neighbours(self, others, radius=RADIUS):
         """Les objets de `others` à moins de `radius` pixels, sauf soi-même."""
-        neighbours = arcade.SpriteList()
+        neighbours = []
         for other in others:
             if math.dist(self.position, other.position) < radius and other != self:
                 neighbours.append(other)
@@ -120,16 +124,19 @@ class MyWindow(arcade.Window):
 
         # une SpriteList : une liste de sprites, qu'arcade dessine d'un coup
         self.boids = arcade.SpriteList()
-        others = arcade.SpriteList()
-        self.boids.extend(random_boids(N_BOIDS,others))
-        others.extend(self.boids)
-        others.extend(obstacle_grid(GRID))
+        self.others = arcade.SpriteList()
+        self.sky = arcade.SpriteList()
+        self.sky.append(arcade.Sprite(SKY2, center_x = WIDTH/2, center_y = HEIGHT/2))
+        self.boids.extend(random_boids(N_BOIDS,self.others))
+        self.others.extend(self.boids)
+        self.others.extend(obstacle_grid(GRID))
 
     def on_update(self, delta_time):
         self.boids.update(delta_time)
 
     def on_draw(self):
         self.clear()
+        self.sky.draw()
         obstacle_grid(GRID).draw()
         self.boids.draw()
 
